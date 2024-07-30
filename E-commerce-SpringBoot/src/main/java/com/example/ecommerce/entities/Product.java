@@ -3,7 +3,6 @@ package com.example.ecommerce.entities;
 import com.example.ecommerce.dto.ProductDto;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.hibernate.annotations.OnDelete;
@@ -16,6 +15,7 @@ public class Product {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String productName;
     @Lob
     private String description;
@@ -28,9 +28,10 @@ public class Product {
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonIgnore
+    @JoinColumn(name = "category_id", nullable = false)
     private Category category;
 
-    public ProductDto getDto(){
+    public ProductDto getDto() {
         ProductDto productDto = new ProductDto();
         productDto.setId(id);
         productDto.setName(productName);
@@ -38,8 +39,11 @@ public class Product {
         productDto.setPrice(price);
         productDto.setByteImg(img);
         productDto.setCategoryId(category.getId());
-        productDto.setCategoryName(Long.valueOf(category.getName()));
+        productDto.setCategoryName(category.getName());
         return productDto;
 
+    }
+
+    public void setCategoryId(Long categoryId) {
     }
 }

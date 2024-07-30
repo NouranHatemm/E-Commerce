@@ -31,9 +31,11 @@ export class PlaceOrderComponent {
   }
     placeOrder(){
       this.customerService.placeOrder(this.orderForm.value).subscribe(res =>{
-        if(res.id != null){
+        console.log("response" , res);
+        if(res != null){
           this.snackBar.open("Order Placed Successfully", "Close", {duration:5000})
-          this.router.navigateByUrl("/customer/my-orders")
+          this.router.navigateByUrl("/customer/orders");
+          this.closeForm();
         }else{
           this.snackBar.open("Something went wrong", "Close", {duration: 5000})
         }

@@ -21,17 +21,15 @@ public class CustomerProductServiceImpl implements CustomerProductService {
     private final ProductRepository productRepository;
     private final FAQRepository faqRepository;
 
-    public List<ProductDto> getAllProducts(){
+    public List<ProductDto> getAllProducts() {
         List<Product> products = productRepository.findAll();
         return products.stream().map(Product::getDto).collect(Collectors.toList());
     }
 
 
-
-
     public ProductDetailsDto getProductDetailsById(Long productId) {
         Optional<Product> optionalProduct = productRepository.findById(productId);
-        if(optionalProduct.isPresent()){
+        if (optionalProduct.isPresent()) {
             List<FAQ> faqList = faqRepository.findAllByProductId(productId);
 
             ProductDetailsDto productDetailsDto = new ProductDetailsDto();
@@ -45,13 +43,10 @@ public class CustomerProductServiceImpl implements CustomerProductService {
     }
 
 
-
-
-    public List<ProductDto> searchProductsByName(String name){
+    public List<ProductDto> searchProductsByName(String name) {
         List<Product> products = productRepository.findAllByProductNameContaining(name);
         return products.stream().map(Product::getDto).collect(Collectors.toList());
     }
-
 
 
 //    @Override

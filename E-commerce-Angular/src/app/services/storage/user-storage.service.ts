@@ -7,6 +7,9 @@ const USER = 'ecom-user';
   providedIn: 'root'
 })
 export class UserStorageService {
+  // static getUserId() {
+  //   throw new Error('Method not implemented.');
+  // }
 
   constructor() { }
 
@@ -26,15 +29,17 @@ export class UserStorageService {
   }
 
    getUser(): any {
+    console.log("localStorage",localStorage);
     return JSON.parse(localStorage.getItem(USER));
   }
 
-   getUserId(): string {
-    const user = this.getUser();
+   getUserId(): any {
+    const user = this.getUser()["userID"];
+    console.log("login user ",user);
     if (user == null) {
-      return '';
+     return null;
     }
-    return user.userId;
+    return user;
   }
    getUserRole(): string {
     const user = this.getUser();

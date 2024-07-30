@@ -49,22 +49,6 @@ export class DashboardComponent {
       })
     } 
   
-    // deleteProduct(productId:any){
-    //   this.customerService.deleteProduct(productId).subscribe(res =>{
-    //     if(res.body == null){
-    //       this.snackBar.open('Product Daleted Successfully!', 'Close', {
-    //         duration: 5000,
-    //       });
-    //     }else{
-    //       this.snackBar.open(res.message, 'close',{
-    //         duration: 5000,
-    //         panelClass: 'error-snackbar'
-    //       });
-    //     }
-    //   })
-    // }
-  
-
     addToCart(id:any){
       this.customerService.addToCart(id).subscribe(res =>{
         this.snackBar.open("Produc added to cart successfully", "close", {duration: 5000})

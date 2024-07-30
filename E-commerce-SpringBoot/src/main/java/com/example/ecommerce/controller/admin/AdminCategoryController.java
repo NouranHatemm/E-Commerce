@@ -1,7 +1,6 @@
 package com.example.ecommerce.controller.admin;
 
 
-
 import com.example.ecommerce.dto.CategoryDto;
 import com.example.ecommerce.entities.Category;
 import com.example.ecommerce.services.admin.category.CategoryService;
@@ -15,7 +14,7 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/admin")
 @RequiredArgsConstructor
-
+@CrossOrigin(origins = "http://localhost:4200")
 public class AdminCategoryController {
     private final CategoryService categoryService;
 

@@ -1,4 +1,4 @@
-<div class="center-container" *ngif="product">
+<div class="center-container" *ngIf="product">
     <div class="product-card">
         <div class="product-image">
             <img [src]="product.processedImg" alt="{{ product.name }} Image">
@@ -16,7 +16,7 @@
 
 </div>
 
-<h1 class="section-heading" *ngif="reviews.length >0">Customer Reviews</h1>
+<h1 class="section-heading" *ngIf="reviews.length >0">Customer Reviews</h1>
 <div *ngif="reviews" class="review-list">
     <div class="center-container">
         <div *ngFor="let review of reviews" class="review-card">

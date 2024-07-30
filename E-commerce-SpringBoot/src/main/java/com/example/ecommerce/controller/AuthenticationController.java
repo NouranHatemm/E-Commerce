@@ -6,24 +6,14 @@ import com.example.ecommerce.dto.UserDTO;
 import com.example.ecommerce.entities.User;
 import com.example.ecommerce.repository.UserRepository;
 import com.example.ecommerce.services.auth.AuthService;
-import com.example.ecommerce.services.user.UserService;
 import com.example.ecommerce.utils.JwtUtil;
-import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletResponse;
-import org.json.JSONException;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.DisabledException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -32,10 +22,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
 
-import java.io.IOException;
-import java.util.Optional;
-
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*", allowedHeaders = "", exposedHeaders = "Cache-Contro l, Content-Language, Content-Type, Expires, Last-Modified")
 @RestController
 //@RequiredArgsConstructor
 public class AuthenticationController {
@@ -58,21 +45,9 @@ public class AuthenticationController {
     @Autowired
     private AuthService authService;
 
-
-    // check at DB
-    // if found return true else false
-//        if true call anything as per business need
-    @CrossOrigin(origins = "*")
     @PostMapping("/authenticate")
     public ResponseEntity<?> createAuthenticationToken(@RequestBody AuthenticationRequest authenticationRequest,
-                                          HttpServletResponse response, HttpSecurity http)
-
-            throws Exception {
-
-        http
-                .cors(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable);
-
+                                                       HttpServletResponse response) throws Exception {
 
 
         User user = userRepository.findFirstByEmail(authenticationRequest.getUsername());
@@ -93,12 +68,10 @@ public class AuthenticationController {
 
     }
 
-    @CrossOrigin(origins = "*")
+
     @PostMapping("/sign-up")
-    public ResponseEntity<?> signupUser(@RequestBody SignupDto signupDto, HttpSecurity http) throws Exception {
-        http
-                .cors(AbstractHttpConfigurer::disable)
-                .csrf(AbstractHttpConfigurer::disable);
+    public ResponseEntity<?> signupUser(@RequestBody SignupDto signupDto) throws Exception {
+
 
         if (authService.hasUserWithEmail(signupDto.getEmail())) {
             return new ResponseEntity<>("User already exist", HttpStatus.NOT_ACCEPTABLE);
@@ -109,4 +82,3 @@ public class AuthenticationController {
 
     }
 }
-

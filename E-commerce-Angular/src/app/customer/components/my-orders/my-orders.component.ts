@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
 import { CustomerService } from '../../services/customer.service';
+import { DataSource } from '@angular/cdk/collections';
+import { MatTableDataSource } from '@angular/material/table';
 
 @Component({
   selector: 'app-my-orders',
@@ -8,7 +10,8 @@ import { CustomerService } from '../../services/customer.service';
 })
 export class MyOrdersComponent {
 
-  myOrder: any;
+  displayedColumns: string[] = ['trackingId','amount','orderDescription','date'];
+  orders:any;
 
   constructor(private customerService: CustomerService){}
 
@@ -18,9 +21,12 @@ export class MyOrdersComponent {
 
   getMyOrders(){
     this.customerService.getOrdersByUserId().subscribe(res => {
-      this.myOrder = res;
+      console.log("response", res)
+      this.orders = res;
       
     })
   }
-  
+
 }
+  
+

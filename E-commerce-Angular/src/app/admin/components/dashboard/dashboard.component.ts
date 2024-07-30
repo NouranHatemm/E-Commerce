@@ -18,6 +18,7 @@ searchProductForm!: FormGroup;
   private snackBar: MatSnackBar, ){}
 
   ngOnInit(){
+    console.log("dashboard");
     this.getAllProducts();
     this.searchProductForm = this.fb.group({
      title: [null, [Validators.required]]
@@ -50,7 +51,8 @@ searchProductForm!: FormGroup;
 
   deleteProduct(productId:any){
     this.adminService.deleteProduct(productId).subscribe(res =>{
-      if(res.body == null){
+      console.log('res ',res);
+      if(res == null){
         this.snackBar.open('Product Daleted Successfully!', 'Close', {
           duration: 5000,
         });

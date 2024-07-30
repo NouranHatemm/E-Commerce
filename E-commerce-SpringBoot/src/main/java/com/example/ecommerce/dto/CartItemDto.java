@@ -11,6 +11,7 @@ public class CartItemDto {
     private String productName;
     private Long orderId;
     private byte[] returnImg;
+    private Long userId;
 
 
     public void setUserId(long id) {

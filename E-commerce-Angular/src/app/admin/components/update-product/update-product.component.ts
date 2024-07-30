@@ -2,7 +2,7 @@ import { Component } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { AdminService } from './../../service/admin.service';
-import { Router } from '@angular/router';
+import { Router, ActivatedRoute } from '@angular/router';
 
 @Component({
   selector: 'app-update-product',
@@ -11,25 +11,33 @@ import { Router } from '@angular/router';
 })
 export class UpdateProductComponent {
 
+  productId = this.activatedRoute.snapshot.params['productId'];
+
   productform!: FormGroup;
-  listOfCategories: any=[];
+  listOfCategories: any = [];
   selectedFile: File | null;
   imagePreview: string | ArrayBuffer | null;
+
+  existingImage: string | null = null;
+  imgChanged = false; 
 
 
   constructor(
     private fb: FormBuilder,
     private router: Router,
     private snackBar: MatSnackBar,
-    private adminService: AdminService
-  ){}
+    private adminService: AdminService,
+    private activatedRoute: ActivatedRoute,
+  ) { }
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
     this.previewImage();
+    this.imgChanged = true;
+    this.existingImage = null;
   }
 
-  previewImage(){
+  previewImage() {
     const reader = new FileReader;
     reader.onload = () => {
       this.imagePreview = reader.result;
@@ -46,40 +54,53 @@ export class UpdateProductComponent {
 
     });
     this.getAllCategories();
+    this.getProductById();
   }
-  
 
-  getAllCategories(){
+
+  getAllCategories() {
     this.adminService.getAllCategories().subscribe(res => {
       this.listOfCategories = res;
     })
   }
 
-  UpdateProduct(): void {
-    if(this.productform.valid){
+  getProductById() {
+    this.adminService.getProductById(this.productId).subscribe(res => {
+      console.log("product", this.productform);
+       this.productform.patchValue(res);
+      this.existingImage = 'data:image/jpeg;base64,' +res.byteImg;
+    })
+  }
+
+  updateProduct(): void {
+    if (this.productform.valid) {
       const formData: FormData = new FormData();
-      formData.append('img', this.selectedFile);
+
+      if(this.imgChanged && this.selectedFile){
+         formData.append('img', this.selectedFile); 
+      }
+    
       formData.append('categoryId', this.productform.get('categoryId').value);
       formData.append('name', this.productform.get('name').value);
       formData.append('description', this.productform.get('description').value);
       formData.append('price', this.productform.get('price').value);
 
-      this.adminService.addProduct(this.productform.value).subscribe((res) =>{
-        if(res.id !== null){
-          this.snackBar.open('Product Posted Successfully', 'close',{
+      this.adminService.updateProduct(this.productId, formData).subscribe((res) => {
+        if (res.id !== null) {
+          this.snackBar.open('Product Updated Successfully', 'close', {
             duration: 5000
           });
           this.router.navigateByUrl('/admin/dashboard');
-        }else{
-          this.snackBar.open(res.message, 'ERROR',{
+        } else {
+          this.snackBar.open(res.message, 'ERROR', {
             duration: 5000,
-            
+
           });
         }
       })
-    
-    }else{
-      for(const i in this.productform.controls){
+
+    } else {
+      for (const i in this.productform.controls) {
         this.productform.controls[i].markAsDirty();
         this.productform.controls[i].updateValueAndValidity();
       }

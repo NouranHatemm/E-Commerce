@@ -10,8 +10,6 @@ import com.example.ecommerce.repository.OrderRepository;
 import com.example.ecommerce.repository.UserRepository;
 import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-//import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -21,13 +19,14 @@ public class AuthServiceImpl implements AuthService {
 
     private final UserRepository userRepository;
 
-    private PasswordEncoder bCryptPasswordEncoder;
+    private final PasswordEncoder bCryptPasswordEncoder;
     private final OrderRepository orderRepository;
 
     @Autowired
-    public AuthServiceImpl(UserRepository userRepository, OrderRepository orderRepository) {
+    public AuthServiceImpl(UserRepository userRepository, OrderRepository orderRepository,
+                           PasswordEncoder bCryptPasswordEncoder) {
         this.userRepository = userRepository;
-//        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
+        this.bCryptPasswordEncoder = bCryptPasswordEncoder;
         this.orderRepository = orderRepository;
     }
 

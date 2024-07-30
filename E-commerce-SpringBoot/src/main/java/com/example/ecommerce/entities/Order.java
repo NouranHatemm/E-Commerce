@@ -8,7 +8,7 @@ import lombok.Setter;
 
 import java.util.Date;
 import java.util.List;
-import java.util.UUID;
+
 
 @Entity
 @Setter
@@ -28,16 +28,27 @@ public class Order {
     private String payment;
     private OrderStatus orderStatus;
     private Long totalAmount;
-    private UUID trackingId;
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long trackingId;
 
     @OneToOne(cascade = CascadeType.MERGE)
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
     private User user;
 
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "order")
     private List<CartItem> cartItems;
 
     public OrderDto getOrderDto() {
-        return null;
+        OrderDto orderDto = new OrderDto();
+        orderDto.setOrderDescription(orderDescription);
+        orderDto.setOrderStatus(orderStatus);
+        orderDto.setId(id);
+        orderDto.setAmount(amount);
+        orderDto.setDate(date);
+        orderDto.setAddress(address);
+        orderDto.setTotalAmount(totalAmount);
+        orderDto.setTrackingId(trackingId);
+        return orderDto;
     }
 
 

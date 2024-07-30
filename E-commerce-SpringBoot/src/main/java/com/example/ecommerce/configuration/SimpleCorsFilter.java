@@ -4,7 +4,7 @@ import io.jsonwebtoken.io.IOException;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import lombok.Value;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
@@ -12,12 +12,25 @@ import org.springframework.stereotype.Component;
 import java.util.HashMap;
 import java.util.Map;
 
+@Component
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class SimpleCorsFilter implements Filter {
 
-    public SimpleCorsFilter() {
+    @Value("${app.client.url}")
+    private String clietAppUrl = "";
 
-    }
+
+//    public class CorsConfig implements WebMvcConfigurer {
+//        @Override
+//        public void addCorsMappings(CorsRegistry registry) {
+//            registry.addMapping("/**")
+//                    .allowedOrigins("http://localhost:4200")
+//                    .allowedMethods("GET", "POST", "PUT", "DELETE")
+//                    .allowedHeaders("*")
+//                    .exposedHeaders("Authorization")
+//                    .allowCredentials(true);
+//        }
+//    }
 
     @Override
     public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain)
@@ -41,7 +54,7 @@ public class SimpleCorsFilter implements Filter {
     }
 
     @Override
-    public void init(FilterConfig filterConfig)  {
+    public void init(FilterConfig filterConfig) {
 
     }
 

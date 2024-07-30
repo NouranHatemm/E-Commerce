@@ -11,11 +11,6 @@
 </form>
 
 <div class="product-list">
-
- 
-
-
-
     <mat-card class="product-card" *ngFor="let product of products">
         <div class="product-image">
             <img [src]="product.processedImg" alt="product-image">
@@ -41,7 +36,6 @@
                  <button mat-raised-button color="primary" class="update-button"
                 (click)="addToCart(product.id)">Add To Cart</button>
 
-          
             </div>
 
             

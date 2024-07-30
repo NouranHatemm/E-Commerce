@@ -1,6 +1,5 @@
 package com.example.ecommerce.services.jwt;
 
-import com.example.ecommerce.entities.User;
 import com.example.ecommerce.repository.UserRepository;
 import com.example.ecommerce.utils.JwtUtil;
 import jakarta.servlet.FilterChain;
@@ -8,6 +7,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -17,8 +17,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.Optional;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
@@ -34,7 +34,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userEmail;
-        if (authHeader == null ||!authHeader.startsWith("Bearer ")) {
+        log.info("request {}", request);
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -42,19 +43,18 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         jwt = authHeader.substring(7);
 
 
-
         // decode token (jwt) to normal data
         String username = jwtUtil.extractUsername(jwt);
         final UserDetails userDetails = userDetailsService.loadUserByUsername(username);
 
         // check token expired
-        boolean expired = jwtUtil.validateToken(jwt, userDetails);
-        if (!expired){
+        boolean expired = jwtUtil.validateToken(jwt);
+        if (!expired) {
             throw new RuntimeException("token not valid");
         }
 
         try {
-            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null , userDetails.getAuthorities());
+            UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
 
             authToken.setDetails(
                     new WebAuthenticationDetailsSource().buildDetails(request)
@@ -63,7 +63,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         } catch (BadCredentialsException e) {
             System.out.println("Incorrect username OR password");
-            System.out.println("BadCredentialsException "+e);
+            System.out.println("BadCredentialsException " + e);
             throw new BadCredentialsException("Incorrect username OR password");
         }
 

@@ -1,5 +1,6 @@
 package com.example.ecommerce.entities;
 
+
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -9,7 +10,7 @@ import lombok.Data;
 public class Category {
 
     @Id
-    @GeneratedValue(strategy =  GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     private String name;
@@ -18,3 +19,5 @@ public class Category {
     private String description;
 
 }
+
+

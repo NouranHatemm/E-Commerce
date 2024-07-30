@@ -11,28 +11,30 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/customer")
 @RequiredArgsConstructor
 public class CartController {
+
     private final CartService cartService;
 
     @PostMapping("/cart")
     public ResponseEntity<?> addProductToCart(@RequestBody AddProductInCartDto addProductInCartDto) {
+        System.out.println("hdh");
         return cartService.addProductToCart(addProductInCartDto);
     }
 
     @GetMapping("/cart/{userId}")
-    public ResponseEntity<?> addProductToCart(@PathVariable Long userId) {
+    public ResponseEntity<?> getCartByUserId(@PathVariable Long userId) {
         OrderDto orderDto = cartService.getCartByUserId(userId);
-       return ResponseEntity.status(HttpStatus.OK).body(orderDto);
+        return ResponseEntity.status(HttpStatus.OK).body(orderDto);
     }
 
     @PostMapping("/addition")
     public ResponseEntity<OrderDto> increaseProductQuantity(@RequestBody AddProductInCartDto addProductInCartDto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.increaseProductQuantity(addProductInCartDto));
     }
-
 
     @PostMapping("/deduction")
     public ResponseEntity<OrderDto> decreaseProductQuantity(@RequestBody AddProductInCartDto addProductInCartDto) {
@@ -44,8 +46,9 @@ public class CartController {
         return ResponseEntity.status(HttpStatus.CREATED).body(cartService.placeOrder(placeOrderDto));
     }
 
-    @GetMapping("/myOrders/{userId}")
+    @GetMapping("/orders/{userId}")
     public ResponseEntity<List<OrderDto>> getMyPlacedOrders(@PathVariable Long userId) {
-        return ResponseEntity.ok(cartService.getMyPlacedOrders(userId));
+        List<OrderDto> orders = cartService.getMyPlacedOrders(userId);
+        return ResponseEntity.ok(orders);
     }
 }

@@ -10,12 +10,13 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
-public class UserServiceImpl implements UserService  {
+public class UserServiceImpl implements UserService {
 
     @Autowired
     private UserRepository userRepository;
+
     @Override
-    public UserDTO createUser(SignupDto signupDTO){
+    public UserDTO createUser(SignupDto signupDTO) {
 
         User user = new User();
         user.setName(signupDTO.getName());
@@ -31,9 +32,10 @@ public class UserServiceImpl implements UserService  {
         return userDTO;
 
     }
-@Override
+
+    @Override
     public boolean hasUserWithEmail(String email) {
-    User user = userRepository.findFirstByEmail(email);
-    return user != null;
+        User user = userRepository.findFirstByEmail(email);
+        return user != null;
     }
 }

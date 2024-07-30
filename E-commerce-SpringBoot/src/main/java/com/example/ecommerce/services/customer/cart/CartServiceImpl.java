@@ -21,7 +21,6 @@ import org.springframework.stereotype.Service;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,131 +38,184 @@ public class CartServiceImpl implements CartService {
     @Autowired
     private ProductRepository productRepository;
 
+
     public ResponseEntity<?> addProductToCart(AddProductInCartDto addProductInCartDto) {
-        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(),
-                OrderStatus.Pending);
 
-        Optional<CartItem> optionalCartItems = cartItemRepository.findByProductIdAndOrderIdAndUserId
-                (addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId());
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(
+                addProductInCartDto.getUserId(), OrderStatus.Pending);
 
-        if (optionalCartItems.isPresent()) {
+        if (activeOrder == null) {
+
+            activeOrder = new Order();
+            activeOrder.setOrderStatus(OrderStatus.Pending);
+            activeOrder.setUser(userRepository.getById(addProductInCartDto.getUserId()));
+            activeOrder.setTotalAmount(0L);
+            activeOrder = orderRepository.save(activeOrder);
+        }
+
+        Optional<CartItem> optionalCartItem = cartItemRepository.findByProductIdAndOrderIdAndUserId(
+                addProductInCartDto.getProductId(), activeOrder.getId(),
+                addProductInCartDto.getUserId());
+
+        if (optionalCartItem.isPresent()) {
             return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
         } else {
-            Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getUserId());
+
+            Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getProductId());
             Optional<User> optionalUser = userRepository.findById(addProductInCartDto.getUserId());
 
-            if (optionalProduct.isPresent()) {
+            if (optionalProduct.isPresent() && optionalUser.isPresent()) {
+                Product product = optionalProduct.get();
+                User user = optionalUser.get();
+
+
                 CartItem cart = new CartItem();
-//                cart.setProduct(optionalProduct.get());
-                cart.setPrice(optionalProduct.get().getPrice());
+                cart.setProduct(product);
+                cart.setPrice(product.getPrice());
                 cart.setQuantity(1L);
-                cart.setUser(optionalUser.get());
+                cart.setUser(user);
                 cart.setOrder(activeOrder);
 
                 CartItem updatedCart = cartItemRepository.save(cart);
 
                 activeOrder.setTotalAmount(activeOrder.getTotalAmount() + cart.getPrice());
-                activeOrder.setAmount(activeOrder.getAmount() + cart.getPrice());
+//activeOrder.setAmount(activeOrder.getAmount() + cart.getPrice());
                 activeOrder.getCartItems().add(cart);
 
                 orderRepository.save(activeOrder);
-                return ResponseEntity.status(HttpStatus.CREATED).body(cart);
 
 
-
-            }else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User orProduct not found");
+                return ResponseEntity.status(HttpStatus.CREATED).body(updatedCart.getId());
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User or Product not found");
             }
-
         }
     }
 
+
     public OrderDto getCartByUserId(Long userId) {
-        Order activOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
-        List<CartItemDto> cartItemsDtoList = activOrder.getCartItems().stream().map(CartItem::getCartDto).collect(Collectors.toList());
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(userId, OrderStatus.Pending);
+
+        if (activeOrder == null) {
+
+            activeOrder = new Order();
+            activeOrder.setOrderStatus(OrderStatus.Pending);
+            activeOrder.setTotalAmount(0L);
+            activeOrder = orderRepository.save(activeOrder);
+        }
+
+        List<CartItemDto> cartItemsDtoList = activeOrder.getCartItems().stream()
+                .map(CartItem::getCartDto)
+                .collect(Collectors.toList());
 
         OrderDto orderDto = new OrderDto();
-        orderDto.setAmount(activOrder.getTotalAmount());
-        orderDto.setId(activOrder.getId());
-        orderDto.setOrderStatus(activOrder.getOrderStatus());
-        orderDto.setTotalAmount(activOrder.getTotalAmount());
-
+        orderDto.setAmount(activeOrder.getTotalAmount());
+        orderDto.setId(activeOrder.getId());
+        orderDto.setOrderStatus(activeOrder.getOrderStatus());
+        orderDto.setTotalAmount(activeOrder.getTotalAmount());
+        orderDto.setCartItems(cartItemsDtoList);
 
         return orderDto;
     }
 
+
     public OrderDto increaseProductQuantity(AddProductInCartDto addProductInCartDto) {
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.Pending);
-        Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getUserId());
         Optional<CartItem> optionalCartItem = cartItemRepository.findByProductIdAndOrderIdAndUserId(
                 addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId()
         );
 
-
-        if (optionalProduct.isPresent() && optionalCartItem.isPresent()) {
+        if (optionalCartItem.isPresent()) {
             CartItem cartItem = optionalCartItem.get();
-            Product product = optionalProduct.get();
+            Product product = productRepository.findById(addProductInCartDto.getProductId()).orElse(null);
 
-            activeOrder.setAmount(activeOrder.getAmount() + product.getPrice());
-            activeOrder.setTotalAmount(activeOrder.getTotalAmount() + product.getPrice());
+            if (product != null) {
+                if (activeOrder.getAmount() == null) {
+                    activeOrder.setAmount(0L);
+                }
+                if (activeOrder.getTotalAmount() == null) {
+                    activeOrder.setTotalAmount(0L);
+                }
 
-            cartItem.setQuantity(cartItem.getQuantity() + 1);
+                activeOrder.setAmount(activeOrder.getAmount() + product.getPrice());
+                activeOrder.setTotalAmount(activeOrder.getTotalAmount() + product.getPrice());
 
-            cartItemRepository.save(cartItem);
-            orderRepository.save(activeOrder);
-            return activeOrder.getOrderDto();
+                cartItem.setQuantity(cartItem.getQuantity() + 1);
 
+                cartItemRepository.save(cartItem);
+                orderRepository.save(activeOrder);
+                return activeOrder.getOrderDto();
+            }
         }
         return null;
     }
 
     public OrderDto decreaseProductQuantity(AddProductInCartDto addProductInCartDto) {
         Order activeOrder = orderRepository.findByUserIdAndOrderStatus(addProductInCartDto.getUserId(), OrderStatus.Pending);
-        Optional<Product> optionalProduct = productRepository.findById(addProductInCartDto.getUserId());
         Optional<CartItem> optionalCartItem = cartItemRepository.findByProductIdAndOrderIdAndUserId(
                 addProductInCartDto.getProductId(), activeOrder.getId(), addProductInCartDto.getUserId()
         );
 
-
-        if (optionalProduct.isPresent() && optionalCartItem.isPresent()) {
+        if (optionalCartItem.isPresent()) {
             CartItem cartItem = optionalCartItem.get();
-            Product product = optionalProduct.get();
+            Product product = productRepository.findById(addProductInCartDto.getProductId()).orElse(null);
 
-            activeOrder.setAmount(activeOrder.getAmount() - product.getPrice());
-            activeOrder.setTotalAmount(activeOrder.getTotalAmount() - product.getPrice());
+            if (product != null) {
+                if (activeOrder.getAmount() == null) {
+                    activeOrder.setAmount(0L);
+                }
+                if (activeOrder.getTotalAmount() == null) {
+                    activeOrder.setTotalAmount(0L);
+                }
 
-            cartItem.setQuantity(cartItem.getQuantity() - 1);
+                activeOrder.setAmount(activeOrder.getAmount() - product.getPrice());
+                activeOrder.setTotalAmount(activeOrder.getTotalAmount() - product.getPrice());
 
-            cartItemRepository.save(cartItem);
+                cartItem.setQuantity(cartItem.getQuantity() - 1);
+
+                cartItemRepository.save(cartItem);
+                orderRepository.save(activeOrder);
+                return activeOrder.getOrderDto();
+            }
+        }
+        return null;
+    }
+
+    public OrderDto placeOrder(PlaceOrderDto placeOrderDto) {
+        Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.Pending);
+        Optional<User> optionalUser = userRepository.findById(placeOrderDto.getUserId());
+        if (optionalUser.isPresent()) {
+
+            if (activeOrder == null) {
+
+                activeOrder = new Order();
+                activeOrder.setOrderStatus(OrderStatus.Pending);
+                activeOrder.setTotalAmount(0L);
+                activeOrder = orderRepository.save(activeOrder);
+            }
+            activeOrder.setOrderDescription(placeOrderDto.getOrderDescription());
+            activeOrder.setDate(new Date());
+            activeOrder.setAddress(placeOrderDto.getAddress());
+            activeOrder.setOrderStatus(OrderStatus.Placed);
+            activeOrder.setTrackingId(activeOrder.getTrackingId());
+
             orderRepository.save(activeOrder);
+
+//            Order order = new Order();
+//           order.setAmount(0L);
+//            order.setUser(optionalUser.get());
+//            order.setOrderStatus(OrderStatus.Pending);
+//            order.setTotalAmount(0L);
+//            Long lastTrackingId = orderRepository.findMaxTrackingId();
+//            System.out.print(lastTrackingId);
+//            // Increment the trackingId
+//            order.setTrackingId((lastTrackingId != null ? lastTrackingId : 0) + 1);
+//            orderRepository.save(order);
+//
             return activeOrder.getOrderDto();
 
         }
         return null;
-    }
-public OrderDto placeOrder(PlaceOrderDto placeOrderDto) {
-    Order activeOrder = orderRepository.findByUserIdAndOrderStatus(placeOrderDto.getUserId(), OrderStatus.Pending);
-Optional<User> optionalUser = userRepository.findById(placeOrderDto.getUserId());
-if (optionalUser.isPresent()) {
-    activeOrder.setOrderDescription(placeOrderDto.getOrderDescription());
-    activeOrder.setDate(new Date());
-    activeOrder.setAddress(placeOrderDto.getAddress());
-    activeOrder.setOrderStatus(OrderStatus.Placed);
-    activeOrder.setTrackingId(UUID.randomUUID());
-
-    orderRepository.save(activeOrder);
-
-    Order order = new Order();
-    order.setAmount(0L);
-    order.setUser(optionalUser.get());
-    order.setOrderStatus(OrderStatus.Pending);
-    order.setTotalAmount(0L);
-    orderRepository.save(order);
-
-    return activeOrder.getOrderDto();
-
-}
-    return null;
 
     }
 
@@ -174,9 +226,11 @@ if (optionalUser.isPresent()) {
     }
 
     @Override
-    public OrderDto searchOrderByTrackingId(UUID trackingId) {
+    public OrderDto searchOrderByTrackingId(Long trackingId) {
         return null;
     }
 
 
 }
+
+

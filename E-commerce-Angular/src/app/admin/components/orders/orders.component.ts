@@ -21,4 +21,6 @@ getPlacedOrder(){
     this.Orders=res;
   })
 }
+displayedColumns: string[] = ['trackingId', 'userName', 'amount', 'description', 'address'];
+
 }

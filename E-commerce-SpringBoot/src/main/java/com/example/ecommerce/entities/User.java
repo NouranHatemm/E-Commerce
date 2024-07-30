@@ -1,8 +1,5 @@
-
-
 package com.example.ecommerce.entities;
 
-import com.example.ecommerce.dto.UserDTO;
 import com.example.ecommerce.enums.UserRole;
 import jakarta.persistence.*;
 import lombok.Data;

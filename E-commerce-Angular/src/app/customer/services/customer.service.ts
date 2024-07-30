@@ -32,18 +32,31 @@ export class CustomerService {
     const cartDto = {
       productId: productId,
       userId: this.UserStorageService.getUserId()
+    
     }
+    console.log("user Id" + this.UserStorageService.getUserId())
     return this.http.post(BASIC_URL + `api/customer/cart`, cartDto, {
+      headers: this.createAuthorizationHeader(),
+    }) 
+     
+  }
+
+
+
+  getCartByUserId(): Observable<any>{
+    const userId = this.UserStorageService.getUserId()
+    return this.http.get(BASIC_URL + `api/customer/cart/${userId}`, {
       headers: this.createAuthorizationHeader(),
     })
   }
+
 
   increaseProductQuantity(productId:any): Observable<any>{
     const cartDto = {
       productId: productId,
       userId: this.UserStorageService.getUserId()
     }
-    return this.http.post(BASIC_URL +'api/customer/addition', cartDto, {
+    return this.http.post(BASIC_URL +`api/customer/addition`, cartDto, {
       headers: this.createAuthorizationHeader(),
     })
   }
@@ -59,28 +72,22 @@ export class CustomerService {
     })
   }
 
-  placeOrder(orderDto: any): Observable<any>{
-    const userId = this.UserStorageService.getUserId()
+  placeOrder(orderDto:any): Observable<any>{
+    orderDto.userId = this.UserStorageService.getUserId()
     return this.http.post(BASIC_URL + `api/customer/placeOrder`, orderDto, {
       headers: this.createAuthorizationHeader(),
     })
   }
 
+ 
   getOrdersByUserId(): Observable<any>{
     const userId = this.UserStorageService.getUserId();
-    return this.http.post(BASIC_URL + `api/customer/myOrders/${userId}`, {
+    return this.http.get(BASIC_URL + `api/customer/orders/${userId}`, {
       headers: this.createAuthorizationHeader(),
     })
   }
 
 
-  getCartByUserId(): Observable<any>{
-    const userId = this.UserStorageService.getUserId()
-    
-    return this.http.get(BASIC_URL + 'api/customer/cart', {
-      headers: this.createAuthorizationHeader(),
-    })
-  }
 
   getProductDetailsById(productId: number) : Observable<any>{
     return this.http.get(BASIC_URL + `api/customer/product/${productId}`,{
@@ -90,7 +97,7 @@ export class CustomerService {
 
   private createAuthorizationHeader(): HttpHeaders{
     return new HttpHeaders().set(
-      'Authorization', 'Bearer' + this.UserStorageService.getToken()
+      'Authorization', this.UserStorageService.getToken()
     )
   }
 }
